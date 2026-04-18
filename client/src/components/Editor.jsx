@@ -188,7 +188,10 @@ const Editor = () => {
   };
 
   return (
-    <div className="editor-container">
+    <div 
+      className="editor-container" 
+      style={{ cursor: activeTool === 'select' ? 'default' : 'crosshair' }}
+    >
       {/* Inline text editor overlay */}
       {editingText && (
         <textarea
@@ -272,14 +275,16 @@ const Editor = () => {
         
         {/* Cursors Layer */}
         <Layer>
-            {Object.entries(cursors).map(([id, pos]) => (
+            {Object.entries(cursors)
+              .filter(([id]) => id !== collab?.socket.id) // Only show other users
+              .map(([id, pos]) => (
                 <React.Fragment key={id}>
-                    <Circle x={pos.x} y={pos.y} radius={4} fill={id === collab?.socket.id ? 'transparent' : '#f43f5e'} />
+                    <Circle x={pos.x} y={pos.y} radius={4} fill="#f43f5e" />
                     <Text 
                         x={pos.x + 10} 
                         y={pos.y + 10} 
-                        text={id === collab?.socket.id ? '' : 'User ' + id.substr(0, 4)} 
-                        fill="white" 
+                        text={'User ' + id.substr(0, 4)} 
+                        fill={theme === 'wireframe' ? '#333333' : '#ffffff'} 
                         fontSize={10} 
                     />
                 </React.Fragment>
@@ -290,41 +295,6 @@ const Editor = () => {
       <div className="zoom-indicator glass">
         {Math.round(zoom * 100)}%
       </div>
-
-      <style>{`
-        .editor-container {
-          flex: 1;
-          background-color: var(--canvas-bg);
-          position: relative;
-          overflow: hidden;
-          cursor: ${activeTool === 'select' ? 'default' : 'crosshair'};
-        }
-        .zoom-indicator {
-          position: absolute;
-          bottom: 20px;
-          right: 20px;
-          padding: 4px 12px;
-          border-radius: 20px;
-          font-size: 11px;
-          color: var(--text-dim);
-          pointer-events: none;
-        }
-        .inline-text-editor {
-          position: fixed;
-          z-index: 9999;
-          border: 2px solid var(--accent-color);
-          border-radius: 4px;
-          background: rgba(13, 13, 13, 0.95);
-          color: var(--text-main);
-          padding: 4px 6px;
-          font-size: 14px;
-          font-family: inherit;
-          resize: both;
-          min-height: 30px;
-          outline: none;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-        }
-      `}</style>
     </div>
   );
 };

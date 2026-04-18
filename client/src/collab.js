@@ -13,10 +13,15 @@ export class CollaborationProvider {
     this.socket.on('connect', () => {
       console.log('Connected to collaboration server');
       this.socket.emit('join-project', projectId);
-      
       this.socket.emit('get-initial-state', projectId, (state) => {
-        Y.applyUpdate(this.doc, new Uint8Array(state));
+        if (state && state.length > 0) {
+          Y.applyUpdate(this.doc, new Uint8Array(state));
+        }
       });
+    });
+
+    this.socket.on('connect_error', (err) => {
+      console.warn('[Collab] Could not connect to server:', err.message);
     });
 
     this.socket.on('yjs-update', ({ update }) => {
@@ -31,22 +36,20 @@ export class CollaborationProvider {
         onCursorRemove(id);
     });
 
+    // doc.on('update') fires for every local + remote change.
+    // Only broadcast local changes (origin !== socket) to avoid echo.
     this.doc.on('update', (update, origin) => {
       if (origin !== this.socket) {
         this.socket.emit('yjs-update', { projectId, update: Array.from(update) });
-        onUpdate(this.elementsMap.toJSON());
       }
-    });
-
-    this.elementsMap.observe(() => {
-        onUpdate(this.elementsMap.toJSON());
+      onUpdate(this.elementsMap.toJSON());
     });
   }
 
   setElements(elements) {
     this.doc.transact(() => {
-      // Clear and reset? Or incremental update?
-      // For simplicity in MVP, we'll do incremental mapping
+      // Clear existing entries before writing to prevent ghost elements
+      this.elementsMap.clear();
       elements.forEach(el => {
         this.elementsMap.set(el.id, el);
       });

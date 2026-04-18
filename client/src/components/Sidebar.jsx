@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStore } from '../store';
-import { Layers, Cuboid as FileTree, Eye, Code } from 'lucide-react';
+import { Layers, Cuboid as FileTree, Code } from 'lucide-react';
 
 const Sidebar = ({ onOpenCode }) => {
   const { elements, selectedId, setSelectedId } = useStore();
@@ -26,10 +26,7 @@ const Sidebar = ({ onOpenCode }) => {
                 <FileTree size={12} />
                 <span>{el.name || el.type}</span>
               </div>
-              <div className="layer-actions">
-                <Eye size={12} className="action-icon" />
-                <Unlock size={12} className="action-icon" />
-              </div>
+              <span className="layer-index">{elements.indexOf(el) + 1}</span>
             </div>
           ))
         )}
@@ -84,28 +81,17 @@ const Sidebar = ({ onOpenCode }) => {
           transition: background var(--transition-fast);
         }
         .layer-item:hover {
-          background: rgba(255, 255, 255, 0.03);
+          background: rgba(128, 128, 128, 0.05);
         }
         .layer-item.active {
           background: rgba(99, 102, 241, 0.1);
           color: var(--accent-color);
         }
-        .layer-info {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-        .layer-actions {
-          display: flex;
-          gap: 8px;
-          opacity: 0;
-          transition: opacity var(--transition-fast);
-        }
-        .layer-item:hover .layer-actions {
-          opacity: 0.6;
-        }
-        .action-icon:hover {
-          opacity: 1;
+        .layer-index {
+          font-size: 10px;
+          color: var(--text-dim);
+          min-width: 16px;
+          text-align: right;
         }
         .empty-state {
           padding: 32px;

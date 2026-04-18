@@ -1,5 +1,5 @@
 const Y = require('yjs');
-const { v4: uuidv4 } = require('uuid');
+
 
 // Simple Yjs doc store
 const docs = new Map();

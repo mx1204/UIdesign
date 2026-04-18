@@ -19,3 +19,41 @@
   overflow: hidden;
   position: relative;
 }
+
+/* Editor Specific Styles */
+.editor-container {
+  flex: 1;
+  background-color: var(--canvas-bg);
+  background-image: radial-gradient(var(--canvas-grid) 1px, transparent 1px);
+  background-size: 20px 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.zoom-indicator {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  color: var(--text-dim);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.inline-text-editor {
+  position: fixed;
+  z-index: 9999;
+  border: 2px solid var(--accent-color);
+  border-radius: 4px;
+  background: var(--bg-color);
+  color: var(--text-main);
+  padding: 4px 6px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: both;
+  min-height: 30px;
+  outline: none;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}

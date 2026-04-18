@@ -14,17 +14,19 @@ function App() {
   const [isCodePanelOpen, setIsCodePanelOpen] = useState(false);
   const { setActiveTool, setElements, setCollab, updateCursor, removeCursor } = useStore();
 
-  // Initialize collaboration
+  // Initialize collaboration — runs once on mount.
+  // Zustand setters are stable references so empty dep array is correct.
   useEffect(() => {
     const provider = new CollaborationProvider(
-        'project-1', 
-        (newElements) => setElements(Object.values(newElements)),
-        (id, pos) => updateCursor(id, pos),
-        (id) => removeCursor(id)
+      'project-1',
+      (newElements) => setElements(Object.values(newElements)),
+      (id, pos) => updateCursor(id, pos),
+      (id) => removeCursor(id)
     );
     setCollab(provider);
     return () => provider.socket.disconnect();
-  }, [setElements, setCollab]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Sync store changes BACK to collab (debounced or on action)
   // For simplicity, we'll let individual components call collab methods if provided

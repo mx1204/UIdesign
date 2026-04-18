@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../store';
-import { Code, Upload, Loader2, FileImage, X, Check } from 'lucide-react';
+import { Code, Upload, Loader2, X, Check } from 'lucide-react';
 
 const CodePanel = ({ isOpen, onClose }) => {
   const { elements } = useStore();
@@ -8,6 +8,7 @@ const CodePanel = ({ isOpen, onClose }) => {
   const [sequenceDiagram, setSequenceDiagram] = useState(null);
   const [loading, setLoading] = useState(false);
   const [generatedCode, setGeneratedCode] = useState('');
+  const [error, setError] = useState('');
 
   const handleFileUpload = (e, type) => {
     const file = e.target.files[0];
@@ -24,20 +25,22 @@ const CodePanel = ({ isOpen, onClose }) => {
   const generateCode = async () => {
     if (!classDiagram || !sequenceDiagram) return;
     setLoading(true);
+    setError('');
     try {
       const response = await fetch('/api/analyze-diagrams', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          classDiagram,
-          sequenceDiagram,
-          canvasState: elements
-        }),
+        body: JSON.stringify({ classDiagram, sequenceDiagram, canvasState: elements }),
       });
       const data = await response.json();
-      setGeneratedCode(data.code);
-    } catch (error) {
-      console.error('Generation failed:', error);
+      if (!response.ok) {
+        setError(data.error || 'Server error. Please try again.');
+        return;
+      }
+      setGeneratedCode(data.code || '');
+    } catch (err) {
+      setError('Network error. Is the server running?');
+      console.error('Generation failed:', err);
     } finally {
       setLoading(false);
     }
@@ -76,13 +79,14 @@ const CodePanel = ({ isOpen, onClose }) => {
              </label>
           </div>
           
-          <button 
-            className="btn-primary generate-btn" 
+          <button
+            className="btn-primary generate-btn"
             onClick={generateCode}
             disabled={loading || !classDiagram || !sequenceDiagram}
           >
             {loading ? <Loader2 className="animate-spin" size={18} /> : 'Generate BCE Code'}
           </button>
+          {error && <p className="error-msg">{error}</p>}
         </div>
 
         {generatedCode && (
@@ -170,6 +174,19 @@ const CodePanel = ({ isOpen, onClose }) => {
           align-items: center;
           justify-content: center;
           gap: 8px;
+        }
+        .generate-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        .error-msg {
+          margin-top: 8px;
+          font-size: 12px;
+          color: #f87171;
+          background: rgba(239, 68, 68, 0.1);
+          border: 1px solid rgba(239, 68, 68, 0.2);
+          border-radius: 6px;
+          padding: 8px 12px;
         }
         .animate-spin {
           animation: spin 1s linear infinite;

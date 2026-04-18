@@ -5,11 +5,13 @@ import { useStore } from '../store';
 const AIPrompt = ({ isOpen, onClose }) => {
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const { setElements, elements, collab } = useStore();
 
   const handleGenerate = async () => {
-    if (!prompt) return;
+    if (!prompt.trim()) return;
     setLoading(true);
+    setError('');
     try {
       const response = await fetch('/api/generate-ui', {
         method: 'POST',
@@ -17,23 +19,30 @@ const AIPrompt = ({ isOpen, onClose }) => {
         body: JSON.stringify({ prompt }),
       });
       const data = await response.json();
-      
-      if (data.elements) {
-        // Offset elements to current view or center
-        const newElements = data.elements.map(el => ({
-            ...el,
-            id: 'ai-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9)
-        }));
-        
-        if (collab) {
-            collab.setElements([...elements, ...newElements]);
-        } else {
-            setElements([...elements, ...newElements]);
-        }
-        onClose();
+
+      if (!response.ok) {
+        setError(data.error || 'Server error. Please try again.');
+        return;
       }
-    } catch (error) {
-      console.error('Generation failed:', error);
+
+      if (data.elements && data.elements.length > 0) {
+        const newElements = data.elements.map(el => ({
+          ...el,
+          id: 'ai-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9)
+        }));
+        if (collab) {
+          collab.setElements([...elements, ...newElements]);
+        } else {
+          setElements([...elements, ...newElements]);
+        }
+        setPrompt('');
+        onClose();
+      } else {
+        setError('AI returned no elements. Try a more specific description.');
+      }
+    } catch (err) {
+      setError('Network error. Is the server running?');
+      console.error('Generation failed:', err);
     } finally {
       setLoading(false);
     }
@@ -56,18 +65,21 @@ const AIPrompt = ({ isOpen, onClose }) => {
         
         <div className="modal-body">
           <p className="description">Describe what you want to build, and I'll generate the wireframe for you.</p>
-          <textarea 
+          <textarea
+            autoFocus
             placeholder="e.g., A login card with email, password fields and a blue submit button"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && e.ctrlKey) handleGenerate(); }}
             disabled={loading}
           />
-          <button 
-            className="btn-primary generate-btn" 
+          {error && <p className="error-msg">{error}</p>}
+          <button
+            className="btn-primary generate-btn"
             onClick={handleGenerate}
-            disabled={loading || !prompt}
+            disabled={loading || !prompt.trim()}
           >
-            {loading ? <Loader2 className="animate-spin" size={18} /> : 'Generate Design'}
+            {loading ? <Loader2 className="animate-spin" size={18} /> : <><Sparkles size={14} /> Generate Design</>}
           </button>
         </div>
       </div>
@@ -134,6 +146,14 @@ const AIPrompt = ({ isOpen, onClose }) => {
         textarea:focus {
           border-color: #a855f7;
         }
+        .error-msg {
+          font-size: 12px;
+          color: #f87171;
+          background: rgba(239, 68, 68, 0.1);
+          border: 1px solid rgba(239, 68, 68, 0.2);
+          border-radius: 6px;
+          padding: 8px 12px;
+        }
         .generate-btn {
           width: 100%;
           background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
@@ -142,6 +162,10 @@ const AIPrompt = ({ isOpen, onClose }) => {
           justify-content: center;
           gap: 8px;
           height: 40px;
+        }
+        .generate-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
         }
         .animate-spin {
           animation: spin 1s linear infinite;
