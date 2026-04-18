@@ -69,6 +69,30 @@ const PropertiesPanel = () => {
         </div>
       </div>
 
+      <div className="section">
+        <div className="section-title"><Palette size={12}/> Appearance</div>
+        <div className="input-group full">
+          <label>Fill</label>
+          <div className="color-input">
+            <input 
+              type="color" 
+              value={selectedElement.fill || '#ffffff'} 
+              onChange={(e) => updateProperty('fill', e.target.value)}
+            />
+            <span>{selectedElement.fill || '#ffffff'}</span>
+          </div>
+        </div>
+        <div className="input-group full">
+          <label>Stroke</label>
+          <div className="color-input">
+            <input 
+              type="color" 
+              value={selectedElement.stroke || '#000000'} 
+              onChange={(e) => updateProperty('stroke', e.target.value)}
+            />
+            <span>{selectedElement.stroke || '#000000'}</span>
+          </div>
+        </div>
       </div>
       
       {selectedElement.type === 'text' && (
