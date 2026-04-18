@@ -14,7 +14,9 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
 // Serve static files from the React app
-app.use(express.static(path.join(__dirname, '../client/dist')));
+const staticPath = path.resolve(__dirname, '../client/dist');
+console.log(`[Server] Serving static files from: ${staticPath}`);
+app.use(express.static(staticPath));
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
@@ -125,9 +127,16 @@ io.on('connection', (socket) => {
 
 setupCollaboration(io);
 
-// Handle any requests that don't match the ones above
+// Handle any requests that don't match the ones above (SPA routing)
+// Only serve index.html if the request doesn't look like a file (no dot in the last path segment)
 app.get('*all', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  const isFilePath = req.path.includes('.') || req.path.split('/').pop().includes('.');
+  
+  if (isFilePath) {
+    return res.status(404).send('Not Found');
+  }
+  
+  res.sendFile(path.join(staticPath, 'index.html'));
 });
 
 const PORT = process.env.PORT || 3001;
