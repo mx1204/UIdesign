@@ -65,6 +65,8 @@ app.post('/api/generate-ui', async (req, res) => {
     res.json(data);
   } catch (error) {
     console.error('Groq Error:', error);
+    res.status(500).json({ error: 'Failed to generate UI' });
+  }
 });
 
 // Diagram Analysis & Code Generation Endpoint
