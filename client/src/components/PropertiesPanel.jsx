@@ -117,7 +117,7 @@ const PropertiesPanel = () => {
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         .properties-panel {
           width: var(--sidebar-width);
           border-left: 1px solid var(--border-color);
@@ -164,10 +164,10 @@ const PropertiesPanel = () => {
           color: var(--text-dim);
         }
         .input-group input, .input-group textarea {
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(128, 128, 128, 0.08);
           border: 1px solid var(--border-color);
           border-radius: 4px;
-          color: white;
+          color: var(--text-main);
           padding: 6px 8px;
           font-size: 12px;
           outline: none;
@@ -182,7 +182,7 @@ const PropertiesPanel = () => {
           display: flex;
           align-items: center;
           gap: 8px;
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(128, 128, 128, 0.08);
           padding: 4px;
           border-radius: 4px;
           border: 1px solid var(--border-color);

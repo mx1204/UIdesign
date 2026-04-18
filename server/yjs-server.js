@@ -17,19 +17,40 @@ function getDoc(projectId) {
 
 function setupCollaboration(io) {
   io.on('connection', (socket) => {
+    let currentProject = null;
+
+    socket.on('join-project', (projectId) => {
+      // Leave any previous room
+      if (currentProject) {
+        socket.leave(currentProject);
+      }
+      currentProject = projectId;
+      socket.join(projectId);
+      console.log(`[Collab] Socket ${socket.id} joined project: ${projectId}`);
+    });
+
     socket.on('yjs-update', ({ projectId, update }) => {
-      // update is a Uint8Array, but sent over socket as a Buffer/ArrayBuffer
       const doc = getDoc(projectId);
       Y.applyUpdate(doc, new Uint8Array(update));
-      
-      // Broadcast to others in the same project
+      // Broadcast to others in the same project room
       socket.to(projectId).emit('yjs-update', { update });
     });
 
     socket.on('get-initial-state', (projectId, callback) => {
       const doc = getDoc(projectId);
       const state = Y.encodeStateAsUpdate(doc);
-      callback(state);
+      callback(Array.from(state));
+    });
+
+    socket.on('cursor-move', ({ projectId, position }) => {
+      socket.to(projectId).emit('cursor-update', { id: socket.id, position });
+    });
+
+    socket.on('disconnect', () => {
+      if (currentProject) {
+        socket.to(currentProject).emit('user-left', socket.id);
+      }
+      console.log(`[Collab] Socket ${socket.id} disconnected`);
     });
   });
 }

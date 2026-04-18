@@ -1,13 +1,11 @@
 import React from 'react';
 import { useStore } from '../store';
 import { 
-  Pointer, 
   Square, 
   Circle as CircleIcon, 
   Type, 
   MousePointer2,
   Sparkles,
-  Share2,
   Download,
   Sun,
   Moon,
@@ -105,7 +103,7 @@ const Toolbar = ({ onToolSelect }) => {
         <button className="btn-primary">Share</button>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .toolbar {
           height: var(--header-height);
           display: flex;

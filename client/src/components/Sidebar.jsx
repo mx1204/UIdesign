@@ -1,4 +1,6 @@
-import { Layers, Cuboid as FileTree, Eye, EyeOff, Lock, Unlock, Code } from 'lucide-react';
+import React from 'react';
+import { useStore } from '../store';
+import { Layers, Cuboid as FileTree, Eye, Code } from 'lucide-react';
 
 const Sidebar = ({ onOpenCode }) => {
   const { elements, selectedId, setSelectedId } = useStore();
@@ -40,7 +42,7 @@ const Sidebar = ({ onOpenCode }) => {
         </button>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .sidebar {
           width: var(--sidebar-width);
           border-right: 1px solid var(--border-color);

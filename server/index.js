@@ -18,9 +18,17 @@ const staticPath = path.resolve(__dirname, '../client/dist');
 console.log(`[Server] Serving static files from: ${staticPath}`);
 app.use(express.static(staticPath));
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+const groq = process.env.GROQ_API_KEY
+  ? new Groq({ apiKey: process.env.GROQ_API_KEY })
+  : null;
+
+const checkGroq = (res) => {
+  if (!groq) {
+    res.status(503).json({ error: 'GROQ_API_KEY not configured on server' });
+    return false;
+  }
+  return true;
+};
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -32,7 +40,9 @@ const io = new Server(server, {
 
 // AI UI Generation Endpoint
 app.post('/api/generate-ui', async (req, res) => {
+  if (!checkGroq(res)) return;
   const { prompt } = req.body;
+  if (!prompt) return res.status(400).json({ error: 'prompt is required' });
 
   try {
     const response = await groq.chat.completions.create({
@@ -73,7 +83,11 @@ app.post('/api/generate-ui', async (req, res) => {
 
 // Diagram Analysis & Code Generation Endpoint
 app.post('/api/analyze-diagrams', async (req, res) => {
+  if (!checkGroq(res)) return;
   const { classDiagram, sequenceDiagram, canvasState } = req.body;
+  if (!classDiagram || !sequenceDiagram) {
+    return res.status(400).json({ error: 'classDiagram and sequenceDiagram are required' });
+  }
 
   try {
     const messages = [
@@ -117,25 +131,19 @@ app.post('/api/analyze-diagrams', async (req, res) => {
   }
 });
 
-// Presence tracking (Cursors)
-const users = new Map();
-
-io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
-  // ... rest of socket logic ...
-});
+// Presence tracking handled in yjs-server.js
+// Duplicate socket handler removed
 
 setupCollaboration(io);
 
-// Handle any requests that don't match the ones above (SPA routing)
-// Only serve index.html if the request doesn't look like a file (no dot in the last path segment)
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', groq: !!process.env.GROQ_API_KEY, timestamp: new Date().toISOString() });
+});
+
+// SPA catch-all — express.static handles real files above;
+// this only fires for unmatched routes (client-side navigation)
 app.get('*all', (req, res) => {
-  const isFilePath = req.path.includes('.') || req.path.split('/').pop().includes('.');
-  
-  if (isFilePath) {
-    return res.status(404).send('Not Found');
-  }
-  
   res.sendFile(path.join(staticPath, 'index.html'));
 });
 

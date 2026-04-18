@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Stage, Layer, Rect, Circle, Transformer, Text } from 'react-konva';
 import { useStore } from '../store';
 
@@ -20,6 +20,15 @@ const Editor = () => {
 
   const stageRef = useRef();
   const transformerRef = useRef();
+  const [stageSize, setStageSize] = useState({ width: window.innerWidth - 480, height: window.innerHeight - 48 });
+  const [editingText, setEditingText] = useState(null); // { id, x, y, width, value }
+
+  // Recalculate stage size on resize
+  useEffect(() => {
+    const onResize = () => setStageSize({ width: window.innerWidth - 480, height: window.innerHeight - 48 });
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   // Handle selection transformer
   useEffect(() => {
@@ -125,13 +134,13 @@ const Editor = () => {
   const handleDragEnd = (e) => {
     const node = e.target;
     const id = node.id();
-    
-    setElements(elements.map(el => {
-      if (el.id === id) {
-        return { ...el, x: node.x(), y: node.y() };
-      }
-      return el;
-    }));
+    const updates = { x: node.x(), y: node.y() };
+
+    if (collab) {
+      collab.updateElement(id, updates);
+    } else {
+      setElements(elements.map(el => el.id === id ? { ...el, ...updates } : el));
+    }
   };
 
   const handleWheel = (e) => {
@@ -170,14 +179,35 @@ const Editor = () => {
       }
   };
 
+  const commitTextEdit = () => {
+    if (!editingText) return;
+    const { id, value } = editingText;
+    if (collab) collab.updateElement(id, { text: value });
+    else setElements(elements.map(item => item.id === id ? { ...item, text: value } : item));
+    setEditingText(null);
+  };
+
   return (
-    <div className="editor-container" onWheel={handleWheel}>
+    <div className="editor-container">
+      {/* Inline text editor overlay */}
+      {editingText && (
+        <textarea
+          autoFocus
+          className="inline-text-editor"
+          style={{ left: editingText.x, top: editingText.y, minWidth: editingText.width }}
+          value={editingText.value}
+          onChange={(e) => setEditingText(prev => ({ ...prev, value: e.target.value }))}
+          onBlur={commitTextEdit}
+          onKeyDown={(e) => { if (e.key === 'Escape') setEditingText(null); if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); commitTextEdit(); } }}
+        />
+      )}
       <Stage
-        width={window.innerWidth - 480} // sidebar * 2
-        height={window.innerHeight - 48} // header
+        width={stageSize.width}
+        height={stageSize.height}
         ref={stageRef}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
+        onWheel={handleWheel}
         draggable={activeTool === 'select' && !selectedId}
       >
         <Layer>
@@ -208,12 +238,19 @@ const Editor = () => {
                     {...commonProps}
                     text={el.text}
                     fontSize={el.fontSize || 14}
-                    onDblClick={() => {
-                        const newText = window.prompt('Edit text:', el.text);
-                        if (newText !== null) {
-                            if (collab) collab.updateElement(el.id, { text: newText });
-                            else setElements(elements.map(item => item.id === el.id ? { ...item, text: newText } : item));
-                        }
+                    onDblClick={(e) => {
+                        const node = e.target;
+                        const stage = stageRef.current;
+                        const stageBox = stage.container().getBoundingClientRect();
+                        const absPos = node.getAbsolutePosition();
+                        setEditingText({
+                            id: el.id,
+                            value: el.text || '',
+                            x: stageBox.left + absPos.x,
+                            y: stageBox.top + absPos.y,
+                            width: Math.max(el.width || 120, 120),
+                        });
+                        setSelectedId(null); // hide transformer during edit
                     }}
                   />
                 );
@@ -254,7 +291,7 @@ const Editor = () => {
         {Math.round(zoom * 100)}%
       </div>
 
-      <style jsx>{`
+      <style>{`
         .editor-container {
           flex: 1;
           background-color: var(--canvas-bg);
@@ -271,6 +308,21 @@ const Editor = () => {
           font-size: 11px;
           color: var(--text-dim);
           pointer-events: none;
+        }
+        .inline-text-editor {
+          position: fixed;
+          z-index: 9999;
+          border: 2px solid var(--accent-color);
+          border-radius: 4px;
+          background: rgba(13, 13, 13, 0.95);
+          color: var(--text-main);
+          padding: 4px 6px;
+          font-size: 14px;
+          font-family: inherit;
+          resize: both;
+          min-height: 30px;
+          outline: none;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
       `}</style>
     </div>

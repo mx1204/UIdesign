@@ -98,7 +98,7 @@ const CodePanel = ({ isOpen, onClose }) => {
         )}
       </div>
 
-      <style jsx>{`
+      <style>{`
         .code-panel {
           position: fixed;
           top: 60px;

@@ -72,7 +72,7 @@ const AIPrompt = ({ isOpen, onClose }) => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .ai-modal-overlay {
           position: fixed;
           top: 0;
@@ -121,10 +121,10 @@ const AIPrompt = ({ isOpen, onClose }) => {
         textarea {
           width: 100%;
           height: 120px;
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(128, 128, 128, 0.08);
           border: 1px solid var(--border-color);
           border-radius: 8px;
-          color: white;
+          color: var(--text-main);
           padding: 12px;
           font-family: inherit;
           font-size: 14px;

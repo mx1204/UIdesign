@@ -9,9 +9,13 @@ export const useStore = create((set) => ({
   
   theme: 'dark',
   setTheme: (theme) => {
-    document.documentElement.setAttribute('data-theme', theme);
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
     set({ theme });
   },
+
+  selectedId: null,
   setSelectedId: (id) => set({ selectedId: id }),
   
   cursors: {},

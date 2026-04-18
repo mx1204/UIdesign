@@ -7,7 +7,7 @@ import AIPrompt from './components/AIPrompt';
 import CodePanel from './components/CodePanel';
 import { useStore } from './store';
 import { CollaborationProvider } from './collab';
-import './index.css';
+import './App.css';
 
 function App() {
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
@@ -45,25 +45,9 @@ function App() {
         <Editor />
         <PropertiesPanel />
       </div>
-      
+
       <AIPrompt isOpen={isAIModalOpen} onClose={() => setIsAIModalOpen(false)} />
       <CodePanel isOpen={isCodePanelOpen} onClose={() => setIsCodePanelOpen(false)} />
-
-      <style jsx>{`
-        .app-container {
-          display: flex;
-          flex-direction: column;
-          height: 100vh;
-          width: 100vw;
-          background-color: var(--bg-color);
-        }
-        .main-layout {
-          display: flex;
-          flex: 1;
-          overflow: hidden;
-          position: relative;
-        }
-      `}</style>
     </div>
   );
 }
