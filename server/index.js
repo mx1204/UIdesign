@@ -126,7 +126,7 @@ io.on('connection', (socket) => {
 setupCollaboration(io);
 
 // Handle any requests that don't match the ones above
-app.get('*', (req, res) => {
+app.get('/*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/dist/index.html'));
 });
 
