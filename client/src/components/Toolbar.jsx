@@ -16,6 +16,14 @@ import {
 } from 'lucide-react';
 import { WIREFRAME_TEMPLATES } from '../constants/templates';
 
+const tools = [
+  { id: 'select', icon: MousePointer2, label: 'Select' },
+  { id: 'rect', icon: Square, label: 'Rectangle' },
+  { id: 'circle', icon: CircleIcon, label: 'Circle' },
+  { id: 'text', icon: Type, label: 'Text' },
+  { id: 'ai', icon: Sparkles, label: 'AI Generate', highlight: true },
+];
+
 const Toolbar = ({ onToolSelect }) => {
   const { activeTool, theme, setTheme, elements, setElements, collab } = useStore();
   const [showTemplates, setShowTemplates] = React.useState(false);

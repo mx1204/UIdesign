@@ -69,31 +69,29 @@ const PropertiesPanel = () => {
         </div>
       </div>
 
-      <div className="section">
-        <div className="section-title"><Palette size={12}/> Appearance</div>
-        <div className="input-group full">
-          <label>Fill</label>
-          <div className="color-input">
-            <input 
-              type="color" 
-              value={selectedElement.fill || '#ffffff'} 
-              onChange={(e) => updateProperty('fill', e.target.value)}
-            />
-            <span>{selectedElement.fill || '#ffffff'}</span>
-          </div>
-        </div>
-        <div className="input-group full">
-          <label>Stroke</label>
-          <div className="color-input">
-            <input 
-              type="color" 
-              value={selectedElement.stroke || '#000000'} 
-              onChange={(e) => updateProperty('stroke', e.target.value)}
-            />
-            <span>{selectedElement.stroke || '#000000'}</span>
-          </div>
-        </div>
       </div>
+      
+      {selectedElement.type === 'text' && (
+        <div className="section">
+          <div className="section-title"><TypeIcon size={12}/> Text</div>
+          <div className="input-group full">
+            <label>Content</label>
+            <textarea 
+              value={selectedElement.text || ''} 
+              onChange={(e) => updateProperty('text', e.target.value)}
+              rows={3}
+            />
+          </div>
+          <div className="input-group full">
+            <label>Font Size</label>
+            <input 
+              type="number" 
+              value={selectedElement.fontSize || 14} 
+              onChange={(e) => updateProperty('fontSize', parseInt(e.target.value))}
+            />
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .properties-panel {
@@ -141,17 +139,20 @@ const PropertiesPanel = () => {
           font-size: 10px;
           color: var(--text-dim);
         }
-        .input-group input {
+        .input-group input, .input-group textarea {
           background: rgba(255, 255, 255, 0.05);
           border: 1px solid var(--border-color);
           border-radius: 4px;
           color: white;
-          padding: 4px 8px;
+          padding: 6px 8px;
           font-size: 12px;
           outline: none;
+          font-family: inherit;
+          resize: none;
         }
-        .input-group input:focus {
+        .input-group input:focus, .input-group textarea:focus {
           border-color: var(--accent-color);
+          background: rgba(255, 255, 255, 0.08);
         }
         .color-input {
           display: flex;

@@ -1,3 +1,4 @@
+import React, { useEffect, useRef } from 'react';
 import { Stage, Layer, Rect, Circle, Transformer, Text } from 'react-konva';
 import { useStore } from '../store';
 
@@ -32,6 +33,25 @@ const Editor = () => {
         transformerRef.current.nodes([]);
     }
   }, [selectedId, elements]);
+
+  // Handle keyboard shortcuts (Delete)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (selectedId && (e.key === 'Delete' || e.key === 'Backspace')) {
+        // Prevent deletion if focus is on an input
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        if (collab) {
+           collab.deleteElement(selectedId);
+        } else {
+           setElements(elements.filter(el => el.id !== selectedId));
+        }
+        setSelectedId(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedId, elements, collab, setElements, setSelectedId]);
 
   const handleMouseDown = (e) => {
     // If clicked on empty space, deselect
@@ -188,6 +208,13 @@ const Editor = () => {
                     {...commonProps}
                     text={el.text}
                     fontSize={el.fontSize || 14}
+                    onDblClick={() => {
+                        const newText = window.prompt('Edit text:', el.text);
+                        if (newText !== null) {
+                            if (collab) collab.updateElement(el.id, { text: newText });
+                            else setElements(elements.map(item => item.id === el.id ? { ...item, text: newText } : item));
+                        }
+                    }}
                   />
                 );
             }
