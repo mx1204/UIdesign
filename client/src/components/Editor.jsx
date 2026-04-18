@@ -77,13 +77,17 @@ const Editor = () => {
         const y = (pointer.y - stage.y()) / stage.scaleX();
 
         const isWireframe = theme === 'wireframe';
+        const width = activeTool === 'text' ? 120 : 100;
+        const height = activeTool === 'text' ? 30 : 100;
+        
         const newElement = {
           id: 'element-' + Date.now(),
           type: activeTool,
-          x,
-          y,
-          width: activeTool === 'text' ? 120 : 100,
-          height: activeTool === 'text' ? 30 : 100,
+          // Center the element on the mouse click
+          x: x - width / 2,
+          y: y - height / 2,
+          width,
+          height,
           fill: activeTool === 'text' ? (isWireframe ? '#222222' : '#ffffff') : (isWireframe ? 'transparent' : '#aed0fb'),
           stroke: isWireframe ? '#666666' : '#3b82f6',
           strokeWidth: 2,
@@ -231,6 +235,8 @@ const Editor = () => {
                 return (
                   <Circle
                     {...commonProps}
+                    x={el.x + el.width / 2}
+                    y={el.y + el.height / 2}
                     radius={el.width / 2}
                   />
                 );

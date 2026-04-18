@@ -3,13 +3,19 @@ import { useStore } from '../store';
 import { Settings, Maximize, Palette, Type as TypeIcon } from 'lucide-react';
 
 const PropertiesPanel = () => {
-  const { elements, selectedId, setElements } = useStore();
+  const { elements, selectedId, setElements, collab } = useStore();
   const selectedElement = elements.find(el => el.id === selectedId);
 
   const updateProperty = (prop, value) => {
-    setElements(elements.map(el => 
-      el.id === selectedId ? { ...el, [prop]: value } : el
-    ));
+    const updates = { [prop]: value };
+    
+    if (collab) {
+      collab.updateElement(selectedId, updates);
+    } else {
+      setElements(elements.map(el => 
+        el.id === selectedId ? { ...el, ...updates } : el
+      ));
+    }
   };
 
   if (!selectedElement) {
